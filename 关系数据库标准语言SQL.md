@@ -26,6 +26,8 @@
 
 **一、创建数据库：**
 
+---
+
 代码：
 
 ~~~sql
@@ -52,7 +54,9 @@ drop database Student;          --删除数据库
 
 **一、创建模式：**
 
-​	模式，一个独立于数据库用户的**非重复命名空间**，在这个空间中可以**定义该模式包含的数据库对象**，例如基本表、视图、索引等。
+---
+
+模式，一个独立于数据库用户的**非重复命名空间**，在这个空间中可以**定义该模式包含的数据库对象**，例如基本表、视图、索引等。
 
 代码：
 
@@ -90,6 +94,8 @@ drop schema zhang;    --注意前提该模式下无对象
 ### 3.3.3表的定义、删除与修改
 
 **一、创建表（三张）**：（1）学生表（Student）（2）课程表（Course）（3）学生课程表（SC）
+
+***
 
 1）学生表（Student）
 
@@ -157,10 +163,110 @@ create table SC
 
 3）外码要和所参照的主码类型相同。
 
+**二、修改表**
+
+***
+
+**增加列**
+
+~~~sql
+alter table student add graduation date;
+/*
+1. 指定要修改的表
+2. add关键字
+3. 新增列的属性名
+4. 新增列的数据类型
+*/
+~~~
+
+**删除列**
+
+~~~sql
+alter table student drop column graduation;
+~~~
+
+**修改列的数据类型**
+
+~~~sql
+alter table student alter column graduation varchar(20); 
+~~~
+
+**增加约束**
+
+~~~sql
+/*这种增加约束的方法不容易从左边的框框（键）中看出来*/
+alter table student add unique(graduation);
+
+/*给增加的约束自定义了一个别名，容易区分*/
+alter table student add constraint S_un unique(graduation);
+
+/*注意*/
+--1. 不可以使用增加not null约束，想要添加只可以在设计中将勾去掉
+--虽然以下的方式看似添加了not null约束，但是不起任何作用
+alter table student add constraint cc check(sname is not null);
+
+--2. 给某一属性列添加主键，需要保证该属性列不允许为空，刚建的新表在未加约束的情况下，默认属性列允许为空值
+alter  table  student  add primary key(sno,cno);
+
+--3. 添加外键，需要保证外码和被参照表的主属性的数据类型保持一致
+alter  table  student  add foreign key (sno) references student(sno);
+~~~
+
+**删除约束**
+
+~~~sql
+/*通过指定的约束名字删除指定的约束*/
+alter table student drop constraint S_un;
+
+/*在左边单机右键删除*/
+~~~
+
+**三、删除表**
+
+---
+
+~~~sql
+/*删除表的时候必须先将参照表干掉，再删除被参照表*/
+drop table student；
+~~~
+
+### 3.3.4索引的建立与删除
+
+> 建立索引的目的是加快数据查询的速度。DBA或者表的属主可以根据需要建立表的索引；但是有些DBMS可以自动建立以下索引，1）PRIMARY  KEY索引（聚簇索引）2）UNIQUE索引（唯一性索引）
+
+**一、创建索引**
+
+~~~sql
+/*创建唯一性索引*/
+/*
+ * stu为索引名字，创建索引必须要有一个索引名
+ * 列名后面紧跟排序类型，ASC为升序，DESC为降序，默认为ASC，可以有多个列，用逗号隔开。
+ * 对于已经包含重复值的属性列不可以增加唯一性索引
+*/
+create unique index S_nn on student(graduation asc);
+
+/*创建聚簇索引（聚集）*/
+Create  clustered index stu on student(sage desc);
+/*
+ * 聚簇索引的关键字为clustered,不是书上有误，而是sqlserver是这样
+ * 同样，列名后面紧跟排序类型，可以有多个列，用逗号隔开。
+ * 聚簇索引严格按照物理存储位置来排序。
+ * 不可以在有主键的表中创建索引
+ * 一个表只能创建一个聚簇索引
+*/
+~~~
+
+**二、删除索引**
+
+~~~sql
+/*注意：删除索引必须为表名+索引名*/
+drop  index  student.stu
+~~~
+
 ## 3.4 数据查询
 
 ## 3.5 数据更新
 
 ## 3.6空值的处理
 
-## 3.7 视图
+## 3.7 视图 
