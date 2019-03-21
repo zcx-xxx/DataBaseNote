@@ -265,6 +265,87 @@ drop  index  student.stu
 
 ## 3.4 数据查询
 
+### 3.4.1单表查询
+
+~~~sql
+--投影，select后边指明所选的列，from指明所访问的表
+select sno, sname, sdept
+from student;
+
+--选择指定的列，可以加算术表达式，并且为其添加新的属性名
+select sno, 2019-sage as birthday
+from student;
+
+--投影后，修改属性名
+select sno num, 2019-sage birthday
+from student;
+
+--*代表选中所有列
+select *
+from student;
+
+--除了int，smallint，其余的数据类型需要单引号''
+select sname,'2017' year
+from student;
+
+--select后加函数
+--count函数空值不计，重复值重复计
+--当count函数作用在全部列上时以元组计数
+select COUNT(sno)
+from student;
+
+--COUNT的含义是计数，*表示所有列，COUNT（*）表示元组数，某个或部分属性列为空值不影响count统计结果
+select COUNT(*)		
+from student;
+
+--去重，distinct作用域是整个元组，是所有指定列组成的元组的去重
+select distinct sno, cno
+from sc;
+
+--查询性别为女的学生的学号，姓名
+select sno, sname
+from student
+where ssex = '女';
+
+--查询学分为4学分的课程的名字
+select cname
+from course
+where ccredit = 4;
+
+--查询成绩在85分以上的学生的学号（学号不重）
+select distinct sno
+from sc
+where grade > 85;
+
+--查询年龄在20~23岁（包括20岁和23岁）之间的学生的姓名、系别和年龄。
+SELECT Sname,Sdept,Sage	
+FROM Student
+WHERE Sage BETWEEN 20 AND 23;
+
+--不能写成sdept='CS','IS','MA'
+select sname,ssex
+from student
+where sdept='CS' or sdept='IS' or sdept = 'MA';
+
+--IS NULL， IS NOT NULL空值：只能用“is”，不能用“=”
+--WHERE NOT Sage >= 20；not必须在 sage前边，而不是>=前边
+
+select sname,ssex
+from student
+where sdept in ('CS','IS','MA');
+
+--模糊查询
+--%任意长度，_单个字符，__表示两个或两个以内
+--转义字符\，需要加escape '\'标注
+select *
+from student
+where sname like '刘__';
+
+SELECT *	--如果字符中本身带有下划线，用任意字符当转义字符
+FROM Course
+WHERE Cname LIKE 'DB\_%i_ _' ESCAPE '\';
+~~~
+
 ## 3.5 数据更新
 
 ## 3.6空值的处理
