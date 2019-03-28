@@ -267,6 +267,10 @@ drop  index  student.stu
 
 ### 3.4.1单表查询
 
+#### 简单的查询操作：
+
+---
+
 ~~~sql
 --投影，select后边指明所选的列，from指明所访问的表
 select sno, sname, sdept
@@ -345,6 +349,176 @@ SELECT *	--如果字符中本身带有下划线，用任意字符当转义字符
 FROM Course
 WHERE Cname LIKE 'DB\_%i_ _' ESCAPE '\';
 ~~~
+
+#### order by子句：
+
+---
+
+~~~sql
+--order by子句
+--选择sno列，从sc表中，cno为'3'，按成绩降序给出
+--desc表示降序排列，asc表示升序排列，当缺省的时候表示asc
+--在SqlServer中当排序的属性列中存在空值的时候，升序排列默认空值在元组最先显示，desc（降序）空值元组在最后显示
+select sno
+from sc
+where cno = '3'
+order by grade desc;
+
+--多属性列排序，首先按ccredit进行升序排列，当ccredit相等的时候，按cpno进行降序排列
+select *
+from course
+order by ccredit, cpno desc;
+~~~
+
+#### 聚集函数：
+
+---
+
+~~~sql
+--count统计sc表中sno的数目，空值不计，重复值重复计
+--distinct关键字，在计算式取消重复列中的重复值
+select count (distinct sno)
+from sc;
+
+--统计元组的数目
+select count(*)
+from sc;
+
+--求该列值的总和
+select sum (grade)
+from sc;
+
+--求平均值，结果向下取整
+select AVG (grade)
+from sc;
+
+--求最小
+select min (grade)
+from sc;
+
+--求最大
+select max (grade)
+from sc;
+~~~
+
+**注意：**
+
+1. 聚集函数全部都忽略空值
+2. where子句中不能使用聚集函数作为条件表达式，聚集函数只能用在select子句或者group by中的having子句。
+
+#### group by子句：
+
+---
+
+~~~sql
+--GROUP BY
+--在有GROUP BY的语句中，可以出现聚集函数和分组列名并存，其他列名不可以，
+--平均值计算略过空值
+--首先按cno进行分组，分别统计每组中sno的数量和每组中的平均值，最后给每一新列起别名
+select cno, count(sno) cnt,AVG (grade) av
+from sc
+group by cno;
+
+--可以使用HAVING短语筛选最终输出结果,作用于组，从中选择满足条件的组
+--同上首先通过cno分组，在通过having语句选出满足指定条件的组
+select cno, count(sno) cnt, AVG (grade) av
+from sc
+group by cno
+having COUNT(sno)>=2;
+
+--查询选修了3门以上课程的学生学号
+--首先使用group by进行分组，然后使用having选择满足条件的组
+select sno,COUNT(cno)
+from sc
+group by sno
+having COUNT(cno)>=3
+~~~
+
+注意：
+
+1. where子句作用于基表或视图，从中选择满足条件的元组。
+
+2. having短语作用于组，从中选择满足条件的组
+
+### 3.4.2连接查询
+
+#### 基本概念
+
+---
+
+1. 连接谓词中的列名称为连接字段
+2. 连接条件中的各连接字段类型必须是可比的，但不必是相同的
+3. SQL没有自动去掉重复列的功能
+
+#### 基本操作
+
+---
+
+~~~sql
+--from除涉及两个表，不加连接条件，得到的是广义的笛卡尔积，select后跟的是最终显示的列
+select student.*,sc.* 
+from student,sc;
+
+--加上连接条件，得到的是从广义笛卡尔积中选择满足指定条件的元组
+--select后跟的是最终所显示的列，对于两个表公共的属性列需要使用表名进行区分，不属于公共列的不需要
+--SqlServer没有自动去掉重复列的功能
+select student.*,cno,grade  --去掉重复列
+from student,sc
+where student.sno=sc.sno;  --连接条件：不然是广义笛卡尔积
+
+--或者--
+select sc.sno,sname,sage,ssex,sdept,cno,grade   --去掉重复列
+from student,sc
+where student.sno=sc.sno;
+~~~
+
+> 一种可能的执行过程：
+>
+> 1）首先在表1中找到第一个元组，然后从头开始扫描表2，逐一查找满足连接条件的元组，找到后就将表1中的第一个元组与该元组拼接起来，形成结果表中一个元组 。
+>
+> 2）表2全部查找完后，再找表1中第二个元组，然后再从头开始扫描表2，逐一查找满足连接条件的元组，找到后就将表1中的第二个元组与该元组拼接起来，形成结果表中一个元组。
+>
+> 3）重复上述操作，直到表1中的全部元组都处理完毕。 
+
+**自身连接**
+
+---
+
+~~~sql
+select first.cno, second.cpno
+from course first, course second
+where first.cpno = second.cno;
+~~~
+
+**注意：**
+
+1. 由于两张表的所有属性列的名字相同，所以需要起别名进行加以区分。
+2. 上述代码表示将第一张自己表和第二张自己表做广义笛卡尔积，然后选择第一张自己表的cpno等于第二张自己的cno的元组对应的属性列。
+
+**外连接**
+
+---
+
+~~~sql
+--外连接
+select sc.sno,sname,sage,ssex,sdept,cno,grade
+from student full outer join sc
+on student.sno = sc.sno;
+
+--左外连接
+select sc.sno,sname,sage,ssex,sdept,cno,grade
+from student left outer join sc
+on student.sno = sc.sno;
+
+--右外连接
+select sc.sno,sname,sage,ssex,sdept,cno,grade
+from student right outer join sc
+on student.sno = sc.sno;
+~~~
+
+注意：
+
+1. 原先的条件where变为on
 
 ## 3.5 数据更新
 
