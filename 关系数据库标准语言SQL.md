@@ -629,11 +629,107 @@ not exists的例子：
 
 ![201904027](img/201904027.PNG)
 
-<span style="color:blue">**难点：使用exists/not exists实现全称量词**</span>
+**<span style="color:blue">难点1：使用exists/not exists实现全称量词</span>**
 
 ---
 
+1）查询选修了全部课程的学生姓名
 
+~~~sql
+select sname
+from student
+where not exists(
+	select *
+	from course
+	where not exists(
+    	select s*
+    	from sc
+    	where student.sno = sno and cno = course.cno));
+~~~
+
+**解释：**
+
+（1）对于第一个not exists里边查询的是当前student是否有未选修的课程，如果当前学生有未选修的课程，经过not exists返回false，即该学生的信息不会被记录。
+
+（2）对于第二个not exists里边查询的是当前学生对象，对于当前的课程，如果选了该门课程，not exists里边为真，经过not exists返回false，该门课程不会被记录，反之，如果该学生未选该门课程，该门课程将会被记录。
+
+（3）有一点像双重for循环，依次遍历所有的student中的元组，在每一个student的情况下，在遍历course，最后在一个not exists中的where子句中进行判断。
+
+**<span style="color:blue">难点2：使用exists/not exists实现逻辑蕴涵</span>**
+
+---
+
+2）查询至少选修了学生201215122选修的全部课程的学生号码。
+
+~~~sql
+SELECT  DISTINCT Sno
+FROM  SC SCX
+WHERE NOT EXISTS
+	(SELECT *
+	 FROM SC SCY
+	 WHERE SCY.Sno = '201215122'  AND
+	 NOT EXISTS
+		(SELECT *
+		 FROM SC SCZ
+		 WHERE SCZ.Sno=SCX.Sno AND SCZ.Cno=SCY.Cno));
+~~~
+
+**解释：**
+
+（1）基本同上
+
+### 3.4.4集合查询
+
+**并操作：**
+
+---
+
+查询计算机科学系的学生及年龄不大于19岁的学生。 
+
+~~~sql
+/*使用UNION取并集*/
+SELECT *
+FROM Student
+WHERE Sdept= 'CS'
+UNION
+SELECT *
+FROM Student
+WHERE Sage<=19；
+~~~
+
+**交操作：**
+
+---
+
+查询计算机科学系的学生与年龄不大于19岁的学生的交集(INTERSECT)。
+
+~~~sql
+/*使用INTERSECT实现交操作*/
+SELECT *
+FROM Student
+WHERE Sdept='CS' 
+INTERSECT
+SELECT *
+FROM Student
+WHERE Sage<=19；
+~~~
+
+**差操作：**
+
+---
+
+查询计算机科学系的学生与年龄不大于19岁的学生的差集。
+
+~~~sql
+/*使用EXCEPT实现差操作*/
+SELECT *
+FROM Student
+WHERE Sdept='CS'
+EXCEPT
+SELECT  *
+FROM Student
+WHERE Sage <=19; 
+~~~
 
 ## 3.5 数据更新
 
