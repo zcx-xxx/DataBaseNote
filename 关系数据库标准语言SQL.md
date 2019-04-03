@@ -629,6 +629,12 @@ not exists的例子：
 
 ![201904027](img/201904027.PNG)
 
+<span style="color:blue">**难点：使用exists/not exists实现全称量词**</span>
+
+---
+
+
+
 ## 3.5 数据更新
 
 ## 3.6空值的处理
